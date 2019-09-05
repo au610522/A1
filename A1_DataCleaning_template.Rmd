@@ -171,8 +171,9 @@ Some things to pay attention to:
 * make sure to understand whether (and if so why) there are NAs in the dataset (e.g. some measures were not taken at all visits, some recordings were lost or permission to use was withdrawn)
 
 ```{r}
+train_2 <- merge(demo_train_subset, LU_train_subset)
 
-
+train <- merge(train_2, token_train_subset)
 ```
 
 
@@ -187,7 +188,16 @@ A possible way to do so:
 
 
 ```{r}
+df <- train[train$VISIT == "1",]
 
+
+df2 <- select(df, SUBJ, ADOS, MullenRaw, ExpressiveLangRaw, Socialization)
+colnames(df2)[2] <- "ADOS1"
+colnames(df2)[3] <- "MullenRaw1"
+colnames(df2)[4] <- "ExpressiveLangRaw1"
+colnames(df2)[5] <- "Socialization1"
+
+merge_train <- merge(df2, train)
 ```
 
 2g. Final touches
@@ -198,6 +208,20 @@ Now we want to
 * Save the data set using into a csv file. Hint: look into write.csv()
 
 ```{r}
+#giving understandable values to gender 
+merge_train$Gender[merge_train$Gender == "1"] <- "F"
+merge_train$Gender[merge_train$Gender == "2"] <- "M"
+
+#chaning the names of diagnosis
+merge_train$Diagnosis <- as.character(merge_train$Diagnosis)
+
+merge_train$Diagnosis[merge_train$Diagnosis == "A"] <- "ASD"
+merge_train$Diagnosis[merge_train$Diagnosis == "B"] <- "TD"
+
+#anonymizing the participants
+merge_train$SUBJ <- as.factor(merge_train$SUBJ)
+a <- seq(1, 61)
+levels(merge_train$SUBJ) <- a
 
 ```
 
