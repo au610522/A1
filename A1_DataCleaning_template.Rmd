@@ -63,7 +63,8 @@ If you're not in a project in Rstudio, make sure to set your working directory h
 If you created an RStudio project, then your working directory (the directory with your data and code for these assignments) is the project directory.
 
 ```{r}
-pacman::p_load(tidyverse,janitor)
+library(pacman)
+p_load(tidyverse,janitor)
 ```
 
 Load the three data sets, after downloading them from dropbox and saving them in your working directory:
@@ -223,6 +224,7 @@ merge_train$SUBJ <- as.factor(merge_train$SUBJ)
 a <- seq(1, 61)
 levels(merge_train$SUBJ) <- a
 
+write.csv(merge_train, file = 'train.csv')
 ```
 
 
@@ -239,6 +241,16 @@ List all kids who:
 
 ```{r}
 
+utt_over_2.7 <- filter(merge_train, CHI_MLU > 2.7) %>%
+  group_by(., SUBJ) %>%
+  summarise(., n())
+
+
+utt_under_1.5 <- filter(merge_train, CHI_MLU < 1.5 & VISIT == 1) 
+  
+all_trials <- group_by(merge_train, SUBJ) %>%
+  summarise(., 'number'=n()) %>%
+  filter(., number < 6)
 
 ```
 
@@ -249,7 +261,11 @@ USING ARRANGE
 2. Sort kids to find the kid who produced the least amount of words on the 1st visit.
 
 ```{r}
+six_visit <- filter(merge_train, VISIT == 6) %>%
+  arrange(., desc(tokens_CHI)) #desc makes it go from the biggest nr to the smallest - not writing anything starts from 0
 
+first_visit <- filter(merge_train, VISIT == 1) %>%
+  arrange(., tokens_CHI)
 
 ```
 
@@ -259,7 +275,10 @@ USING SELECT
 2. What happens if you include the name of a variable multiple times in a select() call?
 
 ```{r}
+small_train <- select(merge_train, SUBJ, Diagnosis, CHI_MLU, tokens_CHI) %>%
+  filter(., Diagnosis == 'ASD')
 
+### It only comes up one time even thought you write it more times 
 ```
 
 
@@ -269,6 +288,15 @@ USING MUTATE, SUMMARISE and PIPES
 3. The solution to task above enables us to assess the average amount of words produced by each child. Why don't we just use these average values to describe the language production of the children? What is the advantage of keeping all the data?
 
 ```{r}
+M <- mean(merge_train$tokens_CHI)
 
+merge_train$mean_all <- M 
 
+M_CHI <- group_by(merge_train, SUBJ) %>% 
+  summarise(., mean_chi = mean(tokens_CHI))
+
+merge_all <- merge(merge_train, M_CHI)
+
+# does not take the diagnosis into acount 
+# does not take the development of each child into acount 
 ```
